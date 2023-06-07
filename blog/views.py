@@ -1,52 +1,61 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from blog.models import BlogPosts
+from blog.models.blogpost import BlogPosts
 
 
-class BlogMethods:
-    @staticmethod
-    def list_blog_posts(request):
-        posts = BlogPosts.objects.all()
-        posts_titles = f"""
-        <h1>TITLES:</h1>
-        {''.join(["<ol>" + post.title + "</ol>" for post in posts])}
-        """
-        return HttpResponse(posts_titles)
+def list_blog_posts(request):
+    """display a list of all the posts in the blog"""
 
-    @staticmethod
-    def search_post_by_id(request, id):
-        post = BlogPosts.objects.get(id=id)
-        return HttpResponse(f'{post.title},{post.content},{post.created_at}')
-
-    @staticmethod
-    def add_post(request):
-        title = input('choose your title: ')
-        content = input('enter post content: ')
-        new_post = BlogPosts.objects.create(title=title, content=content)
-        return HttpResponse(f'new post with id {new_post.id} was created successfully')
-
-    @staticmethod
-    def delete_post_by_id(request, id):
-        post = BlogPosts.objects.filter(id=id).delete()
-        return HttpResponse(f'Post with id {id} was successfully deleted!')
-
-    @staticmethod
-    def alter_post_title(request, id):
-        new_title = input('Please enter the new title: ')
-        post = BlogPosts.objects.get(id=id)
-        old_title = post.title
-        post.title = new_title
-        post.save()
-        return HttpResponse(f'The post with id {id} and the title "{old_title}" now has a new title: "{post.title}"')
-
-    @staticmethod
-    def alter_post_content(request, id):
-        new_content = input("Please enter the new content: ")
-        post = BlogPosts.objects.get(id=id)
-        old_content = post.content
-        post.content = new_content
-        post.save()
-        return HttpResponse(f'The post with id {id} and the content "{old_content}" now has a new content: "{post.content}"')
+    posts = BlogPosts.get_all_blog_posts()
+    return HttpResponse(posts)
 
 
+def display_post_by_id(request, id):
+    """display post details if exists"""
+
+    post = BlogPosts.get_post_by_id(id)
+    if post is None:
+        return redirect("/blog")
+    return HttpResponse(f'{post.title},{post.content},{post.created_at}')
+
+
+def add_post(request):
+    """adding a new post if valid"""
+
+    post = BlogPosts.create_post()
+    if not post:
+        return "Post isn't valid"
+    return HttpResponse(f'new post with id {post.id} was created successfully')
+
+
+def delete_blog_post_by_id(request, id):
+    """deleting the post if exists"""
+
+    post = BlogPosts.get_post_by_id(id)
+    print(post)
+    if post is None:
+        return redirect('/blog')
+    post.delete()
+    return HttpResponse(f'Post with id {id} was successfully deleted!')
+
+
+def alter_post_title(request, id):
+    """altering the post title"""
+
+    post = BlogPosts.get_post_by_id(id)
+    if post is None:
+        return redirect('/blog')
+    post = post.update_post_title()
+    return HttpResponse(f'The post with id {id} now has a new title: "{post.title}"')
+
+
+def alter_post_content(request, id):
+    """altering the post content"""
+
+    post = BlogPosts.get_post_by_id(id)
+    if post is None:
+        return redirect('/blog')
+    post = post.update_post_content()
+    print(post)
+    return HttpResponse(f'The post with id {id} has a new content: "{post.content}"')
 
