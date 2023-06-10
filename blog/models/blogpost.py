@@ -1,5 +1,4 @@
 from django.db import models
-from blog.methods.blog_methods import BlogMethods
 
 
 class BlogPosts(models.Model):
@@ -12,8 +11,7 @@ class BlogPosts(models.Model):
         """display a list of all the blog posts"""
 
         posts = BlogPosts.objects.all()
-        post_html = BlogMethods.list_blog_posts_html(posts)
-        return post_html
+        return posts
 
     @classmethod
     def get_post_by_id(cls, id):
@@ -29,16 +27,16 @@ class BlogPosts(models.Model):
         """finds the post by the title"""
 
         try:
-            return cls.objects.get(id=title)
+            return cls.objects.get(title=title)
         except cls.DoesNotExist:
             return None
 
     @classmethod
-    def create_post(cls):
-        """creating a new post"""
+    def create_post(cls, title, content):
+        """creating a new post in db"""
 
-        user_info = BlogMethods.get_post_from_user()
-        post = cls.objects.create(title=user_info['title'], content=user_info['content'])
+        post = cls.objects.create(title=title, content=content)
+        post = BlogPosts.get_post_by_title(title)
         return post
 
     def delete_post_by_id(self):
@@ -46,18 +44,16 @@ class BlogPosts(models.Model):
 
         self.delete()
 
-    def update_post_title(self):
+    def update_post_title(self, new_title):
         """update the post title in db"""
 
-        new_title = BlogMethods.get_title()
         self.title = new_title
         self.save()
         return self
 
-    def update_post_content(self):
+    def update_post_content(self, new_content):
         """update the post content in db"""
 
-        new_content = BlogMethods.get_content()
         self.content = new_content
         self.save()
         return self

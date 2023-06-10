@@ -14,7 +14,7 @@ class BlogMethods:
 
     @staticmethod
     def get_post_from_user():
-        """gets all the post info from the user"""
+        """gets all the post info from the user return dict"""
 
         title = input('choose your title: ')
         content = input('enter post content: ')
