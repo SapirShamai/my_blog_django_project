@@ -5,6 +5,6 @@ from django.urls import reverse
 def home(request):
     response = [
         'Welcome to my website',
-        '<a href="', reverse('blogs:blog'), '">Go To Blog</a>'
+        '<a href="', reverse('blog:home'), '">Go To Blog</a>'
     ]
     return HttpResponse(''.join(response))

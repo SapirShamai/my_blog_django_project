@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Post Details</title>
+</head>
+<body>
+    <h1>Post Information</h1>
+    <ul>
+        <li>Title: {{post.title}}</li>
+        <li>Content: {{post.content}}</li>
+        <li>Created at: {{post.created_at}}</li>
+    </ul>
+
+    <footer>
+        <a href="{% url 'blog:delete_post' id=post.id%}">Delete post</a>
+        <a href="{% url 'blog:edit_post' id=post.id %}">Edit post</a>
+    </footer>
+</body>
+</html>

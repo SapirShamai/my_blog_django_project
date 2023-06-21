@@ -1,15 +1,18 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from blog.models.blogpost import BlogPosts
-from blog.methods.blog_methods import BlogMethods
+from django.template.response import TemplateResponse
+from django.views.generic.edit import FormView
+from django.urls import reverse_lazy
+from .models.blogpost import BlogPosts
+from .forms import BlogPostForm
 
 
 def list_blog_posts(request):
     """display a list of all the posts in the blog"""
 
     posts = BlogPosts.get_all_blog_posts()
-    html_posts_title = BlogMethods.list_blog_posts_html(posts)
-    return HttpResponse(html_posts_title)
+    context = {'posts': posts}
+    return TemplateResponse(request, 'blog_posts/list_all_posts.html', context)
 
 
 def display_post_by_id(request, id):
@@ -18,49 +21,62 @@ def display_post_by_id(request, id):
     post = BlogPosts.get_post_by_id(id)
     if post is None:
         return redirect("/blog")
-    return HttpResponse(f'{post.title},{post.content},{post.created_at}')
+    context = {'post': post}
+    return TemplateResponse(request, 'blog_posts/post_details.html', context)
 
 
-def add_post(request):
-    """adding a new post if valid"""
-    user_info = BlogMethods.get_post_from_user()
-    print(user_info)
-    post = BlogPosts.create_post(user_info['title'], user_info['content'])
-    if not post:
-        return "Post isn't valid"
-    return HttpResponse(f'new post with title {post.title} id {post.id} was created successfully')
+class CreateBlogPost(FormView):
+    form_class = BlogPostForm
+    template_name = 'blog_posts/add_post.html'
+
+    def get_success_url(self):
+        return reverse_lazy('blog:home')
+
+    def post(self, request, *args, **kwargs):
+        return super().post(self, request, *args, **kwargs)
+
+    def form_valid(self, form):
+        content = form.cleaned_data.get('content')
+        if len(content) < 10:
+            form.add_error('content', 'Your post is too short, we require at least 10 characters')
+            return super().form_invalid(form)
+        BlogPosts.objects.create(**form.cleaned_data)
+        return super().form_valid(form)
 
 
-def delete_blog_post_by_id(request, id):
+class EditPost(FormView):
+    form_class = BlogPostForm
+    template_name = 'blog_posts/add_post.html'
+
+    def get_success_url(self):
+        return reverse_lazy('blog:home')
+
+    def get(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('id')
+        post = BlogPosts.objects.filter(id=post_id)
+        post_data = post.values()[0]
+        unbound_form = self.form_class(post_data)
+        context = {'form': unbound_form}
+        return TemplateResponse(request, self.template_name, context)
+
+    def form_valid(self, form):
+        content = form.cleaned_data.get('content')
+        if len(content) < 10:
+            form.add_error('content', 'Your post is too short, we require at least 10 characters')
+            return super().form_invalid(form)
+        post_id = self.kwargs.get('id')
+        post = BlogPosts.objects.filter(id=post_id)
+        post.update(**form.cleaned_data)
+        return super().form_valid(form)
+
+
+def delete_post(request, **kwargs):
     """deleting the post if exists"""
 
-    post = BlogPosts.get_post_by_id(id)
-    print(post)
+    post_id = kwargs.get('id')
+    post = BlogPosts.get_post_by_id(post_id)
     if post is None:
-        return redirect('/blog')
+        return redirect('blog:home')
     post.delete()
-    return HttpResponse(f'Post with id {id} was successfully deleted!')
-
-
-def alter_post_title(request, id):
-    """altering the post title"""
-
-    post = BlogPosts.get_post_by_id(id)
-    if post is None:
-        return redirect('/blog')
-    new_title = BlogMethods.get_title()
-    post = post.update_post_title(new_title)
-    return HttpResponse(f'The post with id {id} now has a new title: "{new_title}"')
-
-
-def alter_post_content(request, id):
-    """altering the post content"""
-
-    post = BlogPosts.get_post_by_id(id)
-    if post is None:
-        return redirect('/blog')
-    new_content = BlogMethods.get_content()
-    post = post.update_post_content(new_content)
-    print(post)
-    return HttpResponse(f'The post with id {id} has a new content: "{new_content}"')
+    return redirect('blog:home')
 
