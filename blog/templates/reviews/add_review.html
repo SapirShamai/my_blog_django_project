@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add Post</title>
+    <title>Add Review</title>
 </head>
 <body>
-{% if request.session.username %}
-    <h1>Post</h1>
+
+    <h1>New Review</h1>
   <form method="POST">
     {% csrf_token %}
     <table>
@@ -15,11 +15,9 @@
     <button> Submit </button>
 
   </form>
-{% else %}
-<h1>Please Login </h1>
-In order to create a new post you need to be logged in
+
 <br>
 Click here to <a href="{% url 'blog:login' %}">Log in</a>
-{% endif %}
+
 </body>
 </html>

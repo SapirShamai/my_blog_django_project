@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
-from .models.blogpost import BlogPosts
-from .forms import BlogPostForm
+from ..models.blogpost import BlogPosts
+from ..forms.blog_post import BlogPostForm
+from ..models import UsersReviews
 
 
 def list_blog_posts(request):
@@ -21,7 +21,8 @@ def display_post_by_id(request, id):
     post = BlogPosts.get_post_by_id(id)
     if post is None:
         return redirect("/blog")
-    context = {'post': post}
+    reviews = UsersReviews.list_reviews_by_post_id(id)
+    context = {'post': post, 'reviews': reviews}
     return TemplateResponse(request, 'blog_posts/post_details.html', context)
 
 

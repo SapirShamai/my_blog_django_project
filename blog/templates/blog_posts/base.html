@@ -6,8 +6,12 @@
 </head>
 <body>
   <h1>Welcome to my website!</h1>
-
-  <a href=""><button>Log in</button></a>
+  {% if request.session.user_id %}
+  You are logged in as {{ request.session.username }} <a href="{% url 'blog:logout' %}"><button>Log out</button></a>
+  {% else %}
+  <a href="{% url 'blog:login' %}"><button>Log in</button></a>
+  <a href="{% url 'blog:register' %}"><button>Register</button></a>
+  {% endif %}
   <section>
     {% block content %}
     {% endblock %}

@@ -11,10 +11,28 @@
         <li>Content: {{post.content}}</li>
         <li>Created at: {{post.created_at}}</li>
     </ul>
-
+<h1>Post Reviews:</h1>
+{% if reviews %}
+    {% for review in reviews %}
+        <ul>
+            <li>
+                {{review.content}}
+            </li>
+        </ul>
+    {% endfor %}
+{% else %}
+    <h4>This post has no reviews</h4>
+{% endif %}
     <footer>
-        <a href="{% url 'blog:delete_post' id=post.id%}">Delete post</a>
-        <a href="{% url 'blog:edit_post' id=post.id %}">Edit post</a>
+{% if request.session.username %}
+        <a href="{% url 'blog:delete_post' id=post.id%}"><button>Delete post</button></a>
+        <br>
+        <a href="{% url 'blog:edit_post' id=post.id %}"><button>Edit post</button></a>
+        <br>
+{% endif %}
+        <a href="{% url 'blog:review' post_id=post.id %}"><button>Comment</button></a>
+        <br>
+        <a href="{% url 'blog:home' %}"><button>Back</button></a>
     </footer>
 </body>
 </html>
