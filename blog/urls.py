@@ -16,6 +16,7 @@ urlpatterns = [
     path('review/<int:post_id>', add_new_review, name='review'),
     path('register/', register, name='register'),
     path('success/', success_register, name='success'),
+    path('test/', test, name='test'),
 
 
 
